@@ -5,6 +5,7 @@ class Account {
     private String pin;
     private int balance;
 
+
     public void setCardNumber(String cardNumber) {
         this.cardNumber = cardNumber;
     }

@@ -12,7 +12,6 @@ public class Main {
             if(a.getCardNumber().equals(cardNumber) && a.getPin().equals(pin))
                 return a;
         }
-
         return null;
     }
 
