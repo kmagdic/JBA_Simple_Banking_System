@@ -34,7 +34,6 @@ public class AccountDao {
     public void loadAccounts() {
         accountList = new ArrayList<Account>();
 
-
         String sql = "SELECT * FROM card";
 
         try (Statement stmt  = conn.createStatement();
