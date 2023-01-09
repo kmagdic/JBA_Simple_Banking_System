@@ -5,6 +5,20 @@ public class Account {
     private String cardNumber;
     private String pin;
     private int balance;
+    private User user;
+
+    Account() {
+        createNewRandom();
+    }
+
+    public void createNewRandom() {
+
+        String accountNumberWithoutCheckDigit = "400000" + String.format("%09d", (long) (Math.random() * 999999999L));
+
+        setCardNumber(accountNumberWithoutCheckDigit + generateCheckDigit(accountNumberWithoutCheckDigit));
+
+        setPin(String.format("%04d", (long) (Math.random() * 9999)) );
+    }
 
     public void setCardNumber(String cardNumber) {
         this.cardNumber = cardNumber;
@@ -20,6 +34,22 @@ public class Account {
 
     public String getPin() {
         return pin;
+    }
+
+    public int getBalance() {
+        return balance;
+    }
+
+    public void setBalance(int balance) {
+        this.balance = balance;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public User getUser() {
+        return user;
     }
 
     public static boolean checkIfCardNumberAndPinInCorrectFormat(String cardNumber, String pin) {
@@ -38,25 +68,7 @@ public class Account {
 
     }
 
-    public int getBalance() {
-        return balance;
-    }
 
-    public void setBalance(int balance) {
-        this.balance = balance;
-    }
-
-    public static Account createNewRandom() {
-        Account a = new Account();
-
-        String accountNumberWithoutCheckDigit = "400000" + String.format("%09d", (long) (Math.random() * 999999999L));
-
-        a.setCardNumber(accountNumberWithoutCheckDigit + generateCheckDigit(accountNumberWithoutCheckDigit));
-
-        a.setPin(String.format("%04d", (long) (Math.random() * 9999)) );
-
-        return a;
-    }
 
     /**
      * Generate check digit using luhn algorithm

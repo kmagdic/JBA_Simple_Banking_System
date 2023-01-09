@@ -5,20 +5,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AccountDao {
-    List<Account> accountList = new ArrayList<Account>();
     Connection conn = null;
 
-    public void makeDBConnection(String fileName) {
+    public AccountDao(Connection conn) {
+        this.conn = conn;
 
         String createTableSql = "CREATE TABLE IF NOT EXISTS card (\n"
                 + "	id integer PRIMARY KEY,\n"
                 + "	number text NOT NULL UNIQUE,\n"
                 + "	pin text NOT NULL,\n"
-                + "	balance integer\n"
+                + "	balance integer, \n"
+                + "	user_id integer\n"
                 + ");";
 
-        try{
-            conn = DriverManager.getConnection("jdbc:sqlite:" + fileName);
+        try {
+
             Statement stmt = conn.createStatement();
             // create a new table if it doesn't exist
             stmt.execute(createTableSql);
@@ -29,16 +30,14 @@ public class AccountDao {
     }
 
 
+    public List<Account> findAllAccounts(User currUser) {
+        List<Account> accountList = new ArrayList<Account>();
 
 
-    public void loadAccounts() {
-        accountList = new ArrayList<Account>();
+        String sql = "SELECT * FROM card where user_id=" + currUser.getId();
 
-
-        String sql = "SELECT * FROM card";
-
-        try (Statement stmt  = conn.createStatement();
-             ResultSet rs    = stmt.executeQuery(sql)){
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
 
             // loop through the result set
             while (rs.next()) {
@@ -47,27 +46,29 @@ public class AccountDao {
                 a.setPin(rs.getString("pin"));
                 a.setBalance(rs.getInt("balance"));
                 accountList.add(a);
-                System.out.println("Account loaded: " + a);
+                //System.out.println("Account loaded: " + a);
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
 
+        return accountList;
     }
 
     public void addAccount(Account a) {
-        String sql = "INSERT INTO card(number, pin, balance) VALUES(?, ?, ?)";
+        String sql = "INSERT INTO card(number, pin, balance, user_id) VALUES(?, ?, ?, ?)";
         RuntimeException exception = new RuntimeException();
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, a.getCardNumber());
             pstmt.setString(2, a.getPin());
             pstmt.setInt(3, a.getBalance());
+            pstmt.setInt(4, a.getUser().getId());
             pstmt.executeUpdate();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
 
-        accountList.add(a);
+
     }
 
     public void updateAccount(Account a) {
@@ -99,29 +100,29 @@ public class AccountDao {
         }
     }
 
-    // cache functions
-
-    public Account findAccount(String cardNumber, String pin) {
-        for(Account a : accountList) {
-            if(a.getCardNumber().equals(cardNumber) && a.getPin().equals(pin))
-                return a;
-        }
-
-        return null;
-    }
-
     public Account findAccount(String cardNumber) {
-        for(Account a : accountList) {
-            if(a.getCardNumber().equals(cardNumber))
+
+        String sql = "SELECT * FROM card where number=?";
+
+        PreparedStatement stmt = null;
+        try {
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, cardNumber);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                Account a = new Account();
+                a.setCardNumber(rs.getString("number"));
+                a.setPin(rs.getString("pin"));
+                a.setBalance(rs.getInt("balance"));
                 return a;
+            } else {
+                return null;
+            }
+
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-
-        return null;
     }
-
-    public List<Account> getAccountList() {
-        return accountList;
-    }
-
 
 }
