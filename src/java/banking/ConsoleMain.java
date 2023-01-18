@@ -6,7 +6,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
 
-public class Main {
+public class ConsoleMain {
 
     static AccountDao accountDao = null;
     static UserDao userDao = null;
@@ -15,10 +15,10 @@ public class Main {
     static Connection conn = null;
 
     public static void main(String[] args) {
-        makeDBConnection(args[1]);
+        makeDBConnection("testdb.db");
+
         userDao = new UserDao(conn);
         accountDao = new AccountDao(conn);
-
         mainMenu();
 
         System.out.println("Bye!");
@@ -45,11 +45,16 @@ public class Main {
                     System.out.print("Enter last name:\n>");
                     newUser.setLastName(scanner.next());
 
-                    System.out.print("Enter email:\n>");
-                    newUser.setEmail(scanner.next());
+                    do {
+                        System.out.print("Enter email:\n>");
+                        newUser.setEmail(scanner.next());
+                    } while(!newUser.getEmail().contains("@") || newUser.getEmail().length() < 3);
 
-                    System.out.print("Enter password:\n>");
-                    newUser.setPassword(scanner.next());
+                    do {
+                        System.out.print("Enter password (min 5 characters):\n>");
+                        newUser.setPassword(scanner.next());
+                    } while(newUser.getPassword().length() < 5);
+
                     userDao.addUser(newUser);
                     break;
                 case 2:
@@ -130,7 +135,7 @@ public class Main {
                     if (currAccount == null) {
                         System.out.println("Wrong card number or PIN");
                     } else {
-                        System.out.println("You have successfully logged in!");
+                        System.out.println("You have successfully logged in into account!");
                         loggedInAccountMenu(currAccount);
                     }
                     break;
